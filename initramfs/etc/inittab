@@ -16,4 +16,4 @@
 
 ::respawn:/sbin/httpd -r "Administrator Login" -f
 
-::respawn:/sbin/getty 115200 ttyGS0 vt100
+#::respawn:/sbin/getty 115200 ttyGS0 vt100
