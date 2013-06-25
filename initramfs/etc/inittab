@@ -8,11 +8,11 @@
 ::ctrlaltdel:/sbin/reboot
 ::shutdown:/etc/shutdown
 
-#::once:/sbin/watchdog -T 16 -t 2 -F
+::once:/sbin/watchdog -T 16 -t 2 -F
 
-#::respawn:/sbin/inetd -f
+::respawn:/sbin/inetd -f
 #::respawn:sh -c "sleep 3; exec /sbin/udhcpc -i eth0 -p /var/run/udhcpc.pid -f"
-#::respawn:/sbin/ifplugd -n -a -i eth0 -I -l
+::respawn:/sbin/ifplugd -n -a -i eth0 -I -l
 
 ::respawn:/sbin/httpd -r "Administrator Login" -f
 
