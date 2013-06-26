@@ -3,6 +3,7 @@ CFLAGS=-g -Wall -W -Werror -std=gnu99 $(DEFINES)
 BUSYBOX_VERSION=1.21.0
 MINISNMP_VERSION=1.2b
 DROPBEAR_VERSION=2013.58
+I2CTOOLS_VERSION=3.1.0
 FSNAME=initramfs-bin
 RELEASEDIR=../../images/
 BOARD=EOMA68
@@ -17,6 +18,10 @@ clean:
 	rm -f $(PROGRAMS) *.o
 
 .PHONY: all clean
+
+####
+# Busybox
+##
 
 .PHONY: busybox 
 
@@ -36,13 +41,15 @@ busybox-$(BUSYBOX_VERSION)/.unpacked: busybox-$(BUSYBOX_VERSION).tar.bz2 patches
 	done
 	touch busybox-$(BUSYBOX_VERSION)/.unpacked
 
-	if [ ! -d busybox-$(BUSYBOX_VERSION) ]; then tar jxf busybox-$(BUSYBOX_VERSION).tar.bz2; fi
-
 busybox-$(BUSYBOX_VERSION).tar.bz2:
 	wget http://www.busybox.net/downloads/busybox-$(BUSYBOX_VERSION).tar.bz2
 
 busybox_install: busybox-$(BUSYBOX_VERSION)/busybox
 	$(MAKE) -C busybox-$(BUSYBOX_VERSION)  CONFIG_PREFIX=$(shell pwd)/../$(FSNAME)/ install
+
+####
+# mini_snmpd
+##
 
 .PHONY: mini_snmpd
 
@@ -62,6 +69,10 @@ mini_snmpd/.unpacked: mini_snmpd-$(MINISNMP_VERSION).tar.gz patches/mini_snmpd/*
 mini_snmpd-$(MINISNMP_VERSION).tar.gz:
 	wget http://members.aon.at/linuxfreak/linux/mini_snmpd-$(MINISNMP_VERSION).tar.gz
 
+####
+# dropbear (incomplete)
+##
+
 dropbear: dropbear-$(DROPBEAR_VERSION)/.unpacked
 
 dropbear-$(DROPBEAR_VERSION)/.unpacked: dropbear-$(DROPBEAR_VERSION).tar.bz2
@@ -71,6 +82,36 @@ dropbear-$(DROPBEAR_VERSION)/.unpacked: dropbear-$(DROPBEAR_VERSION).tar.bz2
 dropbear-$(DROPBEAR_VERSION).tar.bz2:
 	wget https://matt.ucc.asn.au/dropbear/releases/dropbear-$(DROPBEAR_VERSION).tar.bz2:
 	
+
+####
+# i2c-tools
+##
+
+.PHONY: i2c-tools 
+
+i2c-tools: i2c-tools-$(I2CTOOLS_VERSION)/all
+
+i2c-tools-$(I2CTOOLS_VERSION)/all: i2c-tools-$(I2CTOOLS_VERSION)/.unpacked
+	$(MAKE) -C i2c-tools-$(I2CTOOLS_VERSION) CC=$(CC) 'CFLAGS=$(CFLAGS)' 'LDFLAGS=-static' prefix=/ all
+
+i2c-tools-$(I2CTOOLS_VERSION)/.unpacked: i2c-tools-$(I2CTOOLS_VERSION).tar.bz2 patches/i2c-tools/*
+	tar jxf i2c-tools-$(I2CTOOLS_VERSION).tar.bz2
+	for patch in patches/i2c-tools/*.patch; do \
+		if [ -f $patch ]; then \
+			echo "$$patch"; \
+			patch -p1 -d i2c-tools-$(I2CTOOLS_VERSION) < $$patch; \
+		fi; \
+	done
+	touch i2c-tools-$(I2CTOOLS_VERSION)/.unpacked
+
+i2c-tools-$(I2CTOOLS_VERSION).tar.bz2:
+	wget http://dl.lm-sensors.org/i2c-tools/releases/i2c-tools-$(I2CTOOLS_VERSION).tar.bz2
+
+i2c-tools_install: i2c-tools-$(I2CTOOLS_VERSION)/all
+	$(MAKE) -C i2c-tools-$(I2CTOOLS_VERSION)  CC=$(CC) 'CFLAGS=$(CFLAGS)' 'LDFLAGS=-static' DESTDIR=$(shell pwd)/../$(FSNAME)/ prefix=/ install
+
+#####################################################################
+
 install: $(PROGRAMS) busybox_install ../$(FSNAME)
 #	$(CROSS_COMPILE)strip -o ../$(FSNAME)/sbin/mini_snmpd mini_snmpd/mini_snmpd
 
