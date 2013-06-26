@@ -12,9 +12,6 @@ PROGRAMS= busybox
 all: $(PROGRAMS)
 
 clean: 
-	rm -rf busybox-$(BUSYBOX_VERSION)
-	rm -rf dropbear-$(DROPBEAR_VERSION)
-	rm -rf mini_snmpd
 	rm -f $(PROGRAMS) *.o
 
 .PHONY: all clean
@@ -41,6 +38,10 @@ busybox-$(BUSYBOX_VERSION)/.unpacked: busybox-$(BUSYBOX_VERSION).tar.bz2 patches
 	done
 	touch busybox-$(BUSYBOX_VERSION)/.unpacked
 
+clean: clean_busybox
+clean_busybox:
+	rm -rf busybox-$(BUSYBOX_VERSION)
+
 busybox-$(BUSYBOX_VERSION).tar.bz2:
 	wget http://www.busybox.net/downloads/busybox-$(BUSYBOX_VERSION).tar.bz2
 
@@ -66,6 +67,10 @@ mini_snmpd/.unpacked: mini_snmpd-$(MINISNMP_VERSION).tar.gz patches/mini_snmpd/*
 	done
 	touch mini_snmpd/.unpacked
 
+clean: clean_mini_snmpd
+clean_mini_snmpd:
+	rm -rf mini_snmpd
+
 mini_snmpd-$(MINISNMP_VERSION).tar.gz:
 	wget http://members.aon.at/linuxfreak/linux/mini_snmpd-$(MINISNMP_VERSION).tar.gz
 
@@ -78,6 +83,10 @@ dropbear: dropbear-$(DROPBEAR_VERSION)/.unpacked
 dropbear-$(DROPBEAR_VERSION)/.unpacked: dropbear-$(DROPBEAR_VERSION).tar.bz2
 	tar jxf dropbear-$(DROPBEAR_VERSION).tar.bz2
 	touch dropbear-$(DROPBEAR_VERSION)/.unpacked
+
+clean: clean_dropbear
+clean_dropbear:
+	rm -rf dropbear-$(DROPBEAR_VERSION)
 
 dropbear-$(DROPBEAR_VERSION).tar.bz2:
 	wget https://matt.ucc.asn.au/dropbear/releases/dropbear-$(DROPBEAR_VERSION).tar.bz2:
@@ -104,11 +113,30 @@ i2c-tools-$(I2CTOOLS_VERSION)/.unpacked: i2c-tools-$(I2CTOOLS_VERSION).tar.bz2 p
 	done
 	touch i2c-tools-$(I2CTOOLS_VERSION)/.unpacked
 
+clean: clean_i2c_tools
+clean_i2c_tools:
+	rm -rf i2c-tools-$(I2CTOOLS_VERSION)
+
 i2c-tools-$(I2CTOOLS_VERSION).tar.bz2:
 	wget http://dl.lm-sensors.org/i2c-tools/releases/i2c-tools-$(I2CTOOLS_VERSION).tar.bz2
 
 i2c-tools_install: i2c-tools-$(I2CTOOLS_VERSION)/all
 	$(MAKE) -C i2c-tools-$(I2CTOOLS_VERSION)  CC=$(CC) 'CFLAGS=$(CFLAGS)' 'LDFLAGS=-static' DESTDIR=$(shell pwd)/../$(FSNAME)/ prefix=/ install
+	$(CROSS_COMPILE)strip $(shell pwd)/../$(FSNAME)/sbin/i2cset
+	$(CROSS_COMPILE)strip $(shell pwd)/../$(FSNAME)/sbin/i2cget
+	$(CROSS_COMPILE)strip $(shell pwd)/../$(FSNAME)/sbin/i2cdetect
+	$(CROSS_COMPILE)strip $(shell pwd)/../$(FSNAME)/sbin/i2cdump
+	rm -f $(shell pwd)/../$(FSNAME)/share/man/man8/i2c*
+	rmdir $(shell pwd)/../$(FSNAME)/share/man/man8
+	rmdir $(shell pwd)/../$(FSNAME)/share/man
+	rmdir $(shell pwd)/../$(FSNAME)/share
+	rm -f $(shell pwd)/../$(FSNAME)/include/linux/i2c-dev.h
+	rmdir $(shell pwd)/../$(FSNAME)/include/linux
+	rmdir $(shell pwd)/../$(FSNAME)/include
+	rm -f $(shell pwd)/../$(FSNAME)/bin/decode-dimms
+	rm -f $(shell pwd)/../$(FSNAME)/bin/decode-vaio
+	rm -f $(shell pwd)/../$(FSNAME)/bin/decode-edid
+	rm -f $(shell pwd)/../$(FSNAME)/bin/ddcmon
 
 #####################################################################
 
