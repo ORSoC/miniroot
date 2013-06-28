@@ -1,39 +1,11 @@
-
-//tCYS Min 300ns => 3,33...MHz
-
-//SPI MODE 3
-//CPOL = 1, CPHA = 1 
-
-#include "cpu-utils.h"
-
-#define OLED_SPI_BASE		0xb2000000
-
-//SPI MASTER SLAVE
-//////////////////
-#define RX0	0x00
-#define RX1	0x04
-#define RX2	0x08
-#define RX3	0x0c
-#define TX0	0x00
-#define TX1	0x04
-#define TX2	0x08
-#define TX3	0x0c
-#define CTRL	0x10
-#define DIVIDER 0x14
-#define SS	0x18
-//CTRL
-#define ASS	0x2000
-#define IE	0x1000		//interrupt enable
-#define LSB	0x800
-#define TX_NEG	0x400		//mosi changed falling edge
-#define RX_NEG	0x200		//miso latched falling edge
-#define GO_BSY	0x100
-//USER
-#define CHAR_LEN_10	0xa
-#define CHAR_LEN_20	0x14
-#define CHAR_LEN_CLEAR 	0xffffff80
-///////////////////
-//SPI MASTER SLAVE
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
+#include <linux/types.h>
+#include <linux/spi/spidev.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <stdio.h>
 
 //function set
 #define	DL	0x10
@@ -57,10 +29,19 @@
 #define	RL	0x4
 //cursor/display shift
 
+//Leading bits
+#define DO_CMD   ((0<<1)|(0<<0))
+#define DO_BUSY  ((0<<0)|(0<<1))
+#define DO_WRITE ((1<<1)|(0<<0))
+#define DO_READ  ((1<<1)|(0<<1))
+
+
+int spi_channel;
+
 //functions
 ///////////
 
-void init_spi_oled(int divider);
+void init_spi_oled(const char *devname);
 
 void write_instruction(int ten_bits);
 
@@ -76,10 +57,10 @@ void cursor_display_shift(int data_byte);
 
 void write_str(int start_address, char* str);
 
-int main()
+int main(int argc, char **argv)
 {		
 	//init spi oled
-	init_spi_oled(0x7);	//50MHz/((1+ 0x7 )*2) = 3,125MHz
+	init_spi_oled(argv[1]);
 
 	//init oled
 	function_set(DL|FT1|FT0);
@@ -110,29 +91,53 @@ int main()
 	char* str = "llo World!";
 
 	write_str(0x40, str);
-
-	while(1);
 }
 
 //functions
 ///////////
-void init_spi_oled(int divider){
-	REG32( OLED_SPI_BASE + CTRL ) = ASS | RX_NEG | CHAR_LEN_20;
-	REG32( OLED_SPI_BASE + DIVIDER ) = divider;//16 bit divider, system_freq/((1+divider)*2) = spi_freq
-	REG32( OLED_SPI_BASE + SS ) = 0x1;
+void init_spi_oled(const char *devname)
+{
+	int arg;
+	spi_channel = open(devname, O_RDWR);
 }
 
 void check_busy_flag(void){
-	int valid_data;
-	REG32( OLED_SPI_BASE ) &= CHAR_LEN_CLEAR;
-	REG32( OLED_SPI_BASE ) |= CHAR_LEN_20;
-	do{
-		REG32( OLED_SPI_BASE + TX0 ) = 0x40100;
-		REG32( OLED_SPI_BASE + CTRL ) |= GO_BSY;
-		while( REG32( OLED_SPI_BASE + CTRL ) & GO_BSY );
-		valid_data = REG32( OLED_SPI_BASE + RX0 ) & 0x200;
-	}
-	while( valid_data );
+	char type_busy = DO_BUSY;
+	char busy_response[16];
+	int is_busy;
+	struct spi_ioc_transfer spi_xfr[] = {
+		{
+		.tx_buf = (unsigned long)&type_busy,
+		.rx_buf = (unsigned long)NULL,
+		.len = 1,
+		.speed_hz = 0,
+		.bits_per_word = 2,
+		.delay_usecs = 0,
+		.cs_change = 0,
+		},
+		{
+		.tx_buf = (unsigned long)NULL,
+		.rx_buf = (unsigned long)busy_response,
+		.len = 16,
+		.speed_hz = 0,
+		.bits_per_word = 8,
+		.delay_usecs = 0,
+		.cs_change = 1,
+		},
+	};
+	int err;
+
+	do {
+		err = ioctl(spi_channel, SPI_IOC_MESSAGE(2), spi_xfr);
+		if (err) {
+			perror("spi ioctl");
+			printf("err=%d\n", err);
+//			exit(1);
+		}
+printf("busy data: %02x 
+		is_busy = 0;
+	} while (is_busy);
+	usleep(500);
 }
 
 void function_set(int data_byte){
@@ -170,11 +175,26 @@ void cursor_display_shift(int data_byte){
 }
 
 void write_instruction(int ten_bits){
-	REG32( OLED_SPI_BASE ) &= CHAR_LEN_CLEAR;
-	REG32( OLED_SPI_BASE ) |= CHAR_LEN_10;
-	REG32( OLED_SPI_BASE + TX0 ) = ten_bits;
-	REG32( OLED_SPI_BASE + CTRL ) |= GO_BSY;
-	while( REG32( OLED_SPI_BASE + CTRL ) & GO_BSY );
+	uint16_t data = ten_bits;
+	struct spi_ioc_transfer spi_xfr[] = {
+		{
+		.tx_buf = (unsigned long)&data,
+		.rx_buf = (unsigned long)NULL,
+		.len = 2,
+		.speed_hz = 0,
+		.bits_per_word = 10,
+		.delay_usecs = 0,
+		.cs_change = 1,
+		},
+	};
+	int err;
+
+	err = ioctl(spi_channel, SPI_IOC_MESSAGE(1), spi_xfr);
+	if (err < 0) {
+		perror("spi ioctl");
+		printf("err=%d\n", err);
+//		exit(1);
+	}
 }
 
 void write_str(int start_address, char* str){
