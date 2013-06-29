@@ -145,6 +145,7 @@ i2c-tools_install: i2c-tools-$(I2CTOOLS_VERSION)/all
 oled-test: oled-test.c
 	$(CC) $(CFLAGS) -o $@ $<
 
+install: oled-test_install
 oled-test_install: oled-test
 	$(CROSS_COMPILE)install -x oled-test $(shell pwd)/../$(FSNAME)/bin/
 
