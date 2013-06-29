@@ -143,32 +143,6 @@ int main(int argc, char **argv)
 		argc -= 1 + args;
 		argv += 1 + args;
 	}
-			
-/*
-	//init oled
-	select_font(1);
-	
-	display_mode(0, 0, 0);
-
-	clear_display();
-
-	entry_mode_set(1, 0);
-
-	return_home();
-
-	display_mode(1, 0, 0);
-
-	//print
-	write_data('H');
-
-	write_data(0x65);
-
-	char* str = "llo World!";
-
-	write_str(0x40, str);
-
-	write_str(0x04, argv[2]);
-*/
 }
 
 //functions
@@ -187,9 +161,7 @@ void check_busy_flag(void){
 		.tx_buf = (unsigned long)&command,
 		.rx_buf = (unsigned long)&busy_reg,
 		.len = 4,
-		.speed_hz = 0,
 		.bits_per_word = 18,
-		.delay_usecs = 0,
 		},
 	};
 	int err;
@@ -214,9 +186,7 @@ void check_busy_flag3(int bits){
 		.tx_buf = (unsigned long)&command,
 		.rx_buf = (unsigned long)&busy_reg,
 		.len = 4,
-		.speed_hz = 0,
 		.bits_per_word = bits,
-		.delay_usecs = 0,
 		},
 	};
 	int err;
@@ -281,12 +251,8 @@ void write_oled(int type, uint8_t bits){
 	struct spi_ioc_transfer spi_xfr[] = {
 		{
 		.tx_buf = (unsigned long)&data,
-		.rx_buf = (unsigned long)NULL,
 		.len = 2,
-		.speed_hz = 0,
 		.bits_per_word = 10,
-		.delay_usecs = 0,
-		.cs_change = 1,
 		},
 	};
 	int err;
