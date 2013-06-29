@@ -272,6 +272,25 @@ void write_instruction(uint8_t bits)
 
 void write_str(const char* str)
 {
-	while( *str != '\0' )
-		write_data(*(str++));
+	uint8_t cmd = DO_WRITE;
+	struct spi_ioc_transfer spi_xfr[] = {
+		{
+		.tx_buf = (unsigned long)&cmd,
+		.len = 1,
+		.bits_per_word = 2,
+		},
+		{
+		.tx_buf = (unsigned long)str,
+		.len = strlen(str),
+		.bits_per_word = 8,
+		},
+	};
+	int err;
+
+	err = ioctl(spi_channel, SPI_IOC_MESSAGE(2), spi_xfr);
+	if (err < 0) {
+		perror("spi ioctl");
+		printf("err=%d\n", err);
+		exit(1);
+	}
 }
