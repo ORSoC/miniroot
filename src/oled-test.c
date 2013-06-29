@@ -47,8 +47,8 @@ void return_home(void);
 void set_ddram_address(int addr);
 void set_cgram_address(int addr);
 void write_data(uint8_t data);
-void shift_cursor(int left);
-void shift_display(int left);
+void shift_cursor(int right);
+void shift_display(int right);
 
 void write_str(const char* str);
 
@@ -126,11 +126,11 @@ int main(int argc, char **argv)
 		if (strcmp(cmd, "-h") == 0)
 			return_home();
 		if (strcmp(cmd, "-C") == 0) {
-			shift_cursor(*argv[1] == 'l');
+			shift_cursor(*argv[1] == 'r');
 			args = 1;
 		}
 		if (strcmp(cmd, "-S") == 0) {
-			shift_display(*argv[1] == 'l');
+			shift_display(*argv[1] == 'r');
 			args = 1;
 		}
 		if (strcmp(cmd, "-t") == 0) {
@@ -266,14 +266,14 @@ void write_data(uint8_t data){
 	write_oled(DO_WRITE, data);
 }
 
-void shift_cursor(int left)
+void shift_cursor(int right)
 {
-	write_instruction(CMD_SHIFT | (1<<3) | (left << 2));
+	write_instruction(CMD_SHIFT | (0<<3) | (right << 2));
 }
 
-void shift_display(int left)
+void shift_display(int right)
 {
-	write_instruction(CMD_SHIFT | (0<<3) | (left << 2));
+	write_instruction(CMD_SHIFT | (1<<3) | (right << 2));
 }
 
 void write_oled(int type, uint8_t bits){
