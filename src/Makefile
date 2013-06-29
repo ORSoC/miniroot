@@ -138,6 +138,17 @@ i2c-tools_install: i2c-tools-$(I2CTOOLS_VERSION)/all
 	rm -f $(shell pwd)/../$(FSNAME)/bin/decode-edid
 	rm -f $(shell pwd)/../$(FSNAME)/bin/ddcmon
 
+####
+# oled-test
+##
+
+oled-test: oled-test.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+oled-test_install: oled-test
+	$(CROSS_COMPILE)install -x oled-test $(shell pwd)/../$(FSNAME)/bin/
+
+
 #####################################################################
 
 install: $(PROGRAMS) busybox_install ../$(FSNAME)

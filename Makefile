@@ -42,6 +42,10 @@ initramfs.cpio: modules src/install
 	( cat initramfs.devnodes ; sh $(KERNEL_SOURCE)/scripts/gen_initramfs_list.sh -u squash -g squash initramfs-bin/ initramfs/ modules/ ) | \
 	$(KERNEL_BUILD)/usr/gen_init_cpio - >initramfs.cpio
 
+initramfs.cpio-asis:
+	( cat initramfs.devnodes ; sh $(KERNEL_SOURCE)/scripts/gen_initramfs_list.sh -u squash -g squash initramfs-bin/ initramfs/ modules/ ) | \
+	$(KERNEL_BUILD)/usr/gen_init_cpio - >initramfs.cpio
+
 clean:
 	rm -rf modules initramfs-bin initramfs.cpio initramfs.gz initramfs.lzo initramfs.img
 
