@@ -45,6 +45,7 @@ clean_busybox:
 busybox-$(BUSYBOX_VERSION).tar.bz2:
 	wget http://www.busybox.net/downloads/busybox-$(BUSYBOX_VERSION).tar.bz2
 
+install: busybox_install
 busybox_install: busybox-$(BUSYBOX_VERSION)/busybox
 	$(MAKE) -C busybox-$(BUSYBOX_VERSION)  CONFIG_PREFIX=$(shell pwd)/../$(FSNAME)/ install
 
@@ -120,6 +121,7 @@ clean_i2c_tools:
 i2c-tools-$(I2CTOOLS_VERSION).tar.bz2:
 	wget http://dl.lm-sensors.org/i2c-tools/releases/i2c-tools-$(I2CTOOLS_VERSION).tar.bz2
 
+install: i2c-tools_install
 i2c-tools_install: i2c-tools-$(I2CTOOLS_VERSION)/all
 	$(MAKE) -C i2c-tools-$(I2CTOOLS_VERSION)  CC=$(CC) 'CFLAGS=$(CFLAGS)' 'LDFLAGS=-static' DESTDIR=$(shell pwd)/../$(FSNAME)/ prefix=/ install
 	$(CROSS_COMPILE)strip $(shell pwd)/../$(FSNAME)/sbin/i2cset
@@ -146,14 +148,13 @@ oled-test: oled-test.c
 	$(CC) $(CFLAGS) -o $@ $<
 
 install: oled-test_install
-oled-test_install: oled-test
-	$(CROSS_COMPILE)install -x oled-test $(shell pwd)/../$(FSNAME)/bin/
+oled-test_install: oled-test ../$(FSNAME)/bin
+	$(CROSS_COMPILE)strip oled-test -o $(shell pwd)/../$(FSNAME)/bin/oled-test
 
 
 #####################################################################
 
-install: $(PROGRAMS) busybox_install ../$(FSNAME)
-#	$(CROSS_COMPILE)strip -o ../$(FSNAME)/sbin/mini_snmpd mini_snmpd/mini_snmpd
+install: ../$(FSNAME)
 
 installfs:
 	$(MAKE) FSNAME=installfs do_installfs
