@@ -5,7 +5,7 @@ KERNEL_ARCH=openrisc
 UBOOT_ARCH=or1k
 export CROSS_COMPILE ARCH
 
-all: initramfs.img
+all: initramfs.cpio		# initramfs.img
 
 mrproper: src/mrproper clean
 
@@ -21,7 +21,7 @@ modules:
 	mkdir -p modules
 ifndef KERNEL_MODULES
 	$(warning please define KERNEL_MODULES to where the kernel modules are installed)
-	sleep 5
+	#sleep 5
 else
 	$(info kernel version $(KERNELRELEASE))
 	mkdir -p modules/lib/modules/$(KERNELRELEASE)
