@@ -178,7 +178,7 @@ void check_busy_flag(void){
 }
 
 void check_busy_flag3(int bits){
-	uint32_t command = DO_BUSY << bits - 2;
+	uint32_t command = DO_BUSY << (bits - 2);
 	uint32_t busy_reg;
 	
 	struct spi_ioc_transfer spi_xfr[] = {
