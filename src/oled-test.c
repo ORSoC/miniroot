@@ -60,6 +60,7 @@ void usage(void)
 		"\t-t text	write text\n"
 		"\t-b	check busy flag\n"
 		"\t-f #	select font\n"
+		"\t-e I/D S	Set entry mode and shift\n"
 		"\t-m on/off cursor blink	set display mode\n"
 		"\t-c	clear\n"
 		"\t-g y x	goto\n"
@@ -100,6 +101,10 @@ int main(int argc, char **argv)
 		if (strcmp(cmd, "-f") == 0) {
 			select_font(atoi(argv[1]));
 			args = 1;
+		}
+		if (strcmp(cmd, "-e") == 0) {
+			entry_mode_set(atoi(argv[1]), atoi(argv[2]));
+			args = 2;
 		}
 		if (strcmp(cmd, "-m") == 0) {
 			display_mode(atoi(argv[1]), atoi(argv[2]), atoi(argv[3]));
