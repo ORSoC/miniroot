@@ -220,9 +220,9 @@ void clear_display(void){
 	write_instruction(CMD_CLEAR);
 }
 
-void entry_mode_set(int decrement, int shift)
+void entry_mode_set(int increment, int shift)
 { 
-	write_instruction(CMD_ENTRY_MODE | (decrement << 1) | (shift << 0));
+	write_instruction(CMD_ENTRY_MODE | (increment << 1) | (shift << 0));
 }
 
 void return_home(void){
