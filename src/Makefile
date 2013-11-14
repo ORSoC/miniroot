@@ -4,9 +4,11 @@ BUSYBOX_VERSION=1.21.0
 MINISNMP_VERSION=1.2b
 DROPBEAR_VERSION=2013.58
 I2CTOOLS_VERSION=3.1.0
+SPITEST_VERSION=1.0
 FSNAME=initramfs-bin
 RELEASEDIR=../../images/
 BOARD=geopebble
+export CROSS_COMPILE
 
 PROGRAMS= busybox
 all: $(PROGRAMS)
@@ -33,8 +35,10 @@ busybox-$(BUSYBOX_VERSION)/.config: busybox.config busybox-$(BUSYBOX_VERSION)/.u
 busybox-$(BUSYBOX_VERSION)/.unpacked: busybox-$(BUSYBOX_VERSION).tar.bz2 patches/busybox/*
 	tar jxf busybox-$(BUSYBOX_VERSION).tar.bz2
 	for patch in patches/busybox/*.patch; do \
-		echo "$$patch"; \
-		patch -p1 -d busybox-$(BUSYBOX_VERSION) < $$patch; \
+		if [ -f "$patch" ]; then \
+			echo "$$patch"; \
+			patch -p1 -d busybox-$(BUSYBOX_VERSION) < $$patch; \
+		fi; \
 	done
 	touch busybox-$(BUSYBOX_VERSION)/.unpacked
 
@@ -63,8 +67,10 @@ mini_snmpd/mini_snmpd: mini_snmpd/.unpacked
 mini_snmpd/.unpacked: mini_snmpd-$(MINISNMP_VERSION).tar.gz patches/mini_snmpd/*
 	tar zxf mini_snmpd-$(MINISNMP_VERSION).tar.gz
 	for patch in patches/mini_snmpd/*.patch; do \
-		echo "$$patch"; \
-		patch -d mini_snmpd < $$patch; \
+		if [ -f "$patch" ]; then \
+			echo "$$patch"; \
+			patch -d mini_snmpd < $$patch; \
+		fi; \
 	done
 	touch mini_snmpd/.unpacked
 
@@ -107,7 +113,7 @@ i2c-tools-$(I2CTOOLS_VERSION)/all: i2c-tools-$(I2CTOOLS_VERSION)/.unpacked
 i2c-tools-$(I2CTOOLS_VERSION)/.unpacked: i2c-tools-$(I2CTOOLS_VERSION).tar.bz2 patches/i2c-tools/*
 	tar jxf i2c-tools-$(I2CTOOLS_VERSION).tar.bz2
 	for patch in patches/i2c-tools/*.patch; do \
-		if [ -f $patch ]; then \
+		if [ -f "$patch" ]; then \
 			echo "$$patch"; \
 			patch -p1 -d i2c-tools-$(I2CTOOLS_VERSION) < $$patch; \
 		fi; \
@@ -155,12 +161,26 @@ oled-test_install: oled-test ../$(FSNAME)/bin
 # spi-test
 ##
 
-spi-test: spi-test.c
-	$(CC) $(CFLAGS) -o $@ $<
+.PHONY: spi-test
+
+spi-test: spi-test-$(SPITEST_VERSION)/spi-test
+
+spi-test-$(SPITEST_VERSION)/spi-test:	spi-test-$(SPITEST_VERSION)/Makefile
+	$(MAKE) -C spi-test-$(SPITEST_VERSION)
+
+spi-test-$(SPITEST_VERSION)/Makefile: spi-test-$(SPITEST_VERSION).tar.gz
+	tar zxf spi-test-$(SPITEST_VERSION).tar.gz
+
+clean: clean_spi-test
+clean_spi-test:
+	rm -rf spi-test-$(SPITEST_VERSION)
+
+spi-test-$(SPITEST_VERSION).tar.gz:
+	wget -O spi-test-$(SPITEST_VERSION).tar.gz https://github.com/ORSoC/spi-test/archive/$(SPITEST_VERSION).tar.gz
 
 install: spi-test_install
 spi-test_install: spi-test ../$(FSNAME)/bin
-	$(CROSS_COMPILE)strip spi-test -o $(shell pwd)/../$(FSNAME)/bin/spi-test
+	$(CROSS_COMPILE)strip spi-test-$(SPITEST_VERSION)/spi-test -o $(shell pwd)/../$(FSNAME)/bin/spi-test
 
 
 #####################################################################
