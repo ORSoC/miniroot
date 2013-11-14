@@ -6,7 +6,7 @@ DROPBEAR_VERSION=2013.58
 I2CTOOLS_VERSION=3.1.0
 FSNAME=initramfs-bin
 RELEASEDIR=../../images/
-BOARD=EOMA68
+BOARD=geopebble
 
 PROGRAMS= busybox
 all: $(PROGRAMS)
