@@ -157,6 +157,10 @@ install: oled-test_install
 oled-test_install: oled-test ../$(FSNAME)/bin
 	$(CROSS_COMPILE)strip oled-test -o $(shell pwd)/../$(FSNAME)/bin/oled-test
 
+clean: clean_oled-test
+clean_oled-test:
+	rm -f oled-test
+
 ####
 # spi-test
 ##
