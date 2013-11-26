@@ -1,4 +1,4 @@
-PROGRAMS = adc_enable_irq adc_irq
+PROGRAMS = adc_enable_irq adc_irq adc_trigger_irq
 
 all: $(PROGRAMS)
 
