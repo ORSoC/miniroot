@@ -193,6 +193,12 @@ spi-test_install: spi-test ../$(FSNAME)/bin
 adctest:
 	$(MAKE) CC=$(CC) -C adctest
 
+clean: clean_adctest
+clean_adctest:
+	$(MAKE) CC=$(CC) -C adctest clean
+
+
+
 #####################################################################
 
 install: ../$(FSNAME)
