@@ -189,6 +189,12 @@ spi-test_install: spi-test ../$(FSNAME)/bin
 
 #####################################################################
 
+.PHONY: adctest
+adctest:
+	$(MAKE) CC=$(CC) -C adctest
+
+#####################################################################
+
 install: ../$(FSNAME)
 
 installfs:
