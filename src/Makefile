@@ -197,6 +197,9 @@ clean: clean_adctest
 clean_adctest:
 	$(MAKE) CC=$(CC) -C adctest clean
 
+install: adctest_install
+adctest_install: 
+	$(MAKE) CC=$(CC) CROSS_COMPILE=$(CROSS_COMPILE) DESTDIR=$(shell pwd)/../$(FSNAME)/ prefix=/ -C adctest install
 
 
 #####################################################################
