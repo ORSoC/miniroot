@@ -213,13 +213,16 @@ do_installfs: $(PROGRAMS) busybox_install ../$(FSNAME)
 
 INITRAMFS_DIRS=../$(FSNAME)/mnt ../$(FSNAME)/proc ../$(FSNAME)/sys ../$(FSNAME)/bin ../$(FSNAME)/sbin ../$(FSNAME)/tmp
 
-../$(FSNAME): $(INITRAMFS_DIRS) ../$(FSNAME)/usr
+../$(FSNAME): $(INITRAMFS_DIRS) ../$(FSNAME)/usr ../$(FSNAME)/init
 
 $(INITRAMFS_DIRS):
 	mkdir -p $@
 
 ../$(FSNAME)/usr:
 	ln -s . $@
+
+../$(FSNAME)/init:
+	ln -s sbin/init $@
 
 cleaninstallfs:
 	$(MAKE) FSNAME=installfs cleaninitramfs
