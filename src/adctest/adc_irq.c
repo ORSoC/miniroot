@@ -6,6 +6,7 @@
 #include <sys/select.h>
 #include <stdlib.h>
 #include <sys/mman.h>
+#include <unistd.h>
 
 #include "adc.h"
 
@@ -56,7 +57,7 @@ int main(int argc, char **argv)
 		irq_sources = adc_read(ADC_REG_INTERRUPT);
 		n = read(adc_fd, &irq_cnt, sizeof(irq_cnt));
 		if (n == sizeof(irq_cnt)) {
-			printf("Got %d interrupts, sources %x\n", irq_sources);
+			printf("Got %d interrupts, sources %x\n", irq_cnt, irq_sources);
 		}
 
 		/* Clear IRQ sources. */
