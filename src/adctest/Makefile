@@ -1,5 +1,6 @@
+CFLAGS=-g
 CC=$(CROSS_COMPILE)gcc
-PROGRAMS = adc_enable_irq adc_irq adc_trigger_irq
+PROGRAMS = adc_enable_irq adc_irq adc_trigger_irq adc_sample
 
 all: $(PROGRAMS)
 
