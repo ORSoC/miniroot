@@ -280,7 +280,7 @@ void read_sample_block_adc(void *data, size_t len)
 		.bits_per_word = 192, // CH0, CH1, CH2, CH3, #PPS, #DRDYOUT * 32
 	};
 
-	int ret = ioctl(adcspi_fd, SPI_IOC_MESSAGE(2), &tr);
+	int ret = ioctl(adcspi_fd, SPI_IOC_MESSAGE(1), &tr);
 	if (ret < 0) {
 		perror("can't send ADC SPI message");
 		exit(1);
@@ -291,27 +291,38 @@ int main(int argc __attribute__((unused)), char **argv __attribute__((unused)))
 {
 	open_adcctrl();
 
-	char buffer[10*1024*1024];
+	char buffer[10*6*4];
 
+fprintf(stderr, "set_muxes\n");
 	set_muxes(0);
 
 	//0mV,  MEAS = 0, VOS = 0
 	//1V/V, MEAS = 0, GAIN = 0
+fprintf(stderr, "pga_setup\n");
 	pga_setup_all(0, 0);
 
+fprintf(stderr, "open_adcspi\n");
 	open_adcspi();
 
+fprintf(stderr, "write_conf\n");
 	write_configuration_register_adc(1 << 6);                //set bit 6, RST
 
+fprintf(stderr, "write_conf\n");
 	write_configuration_register_adc(1 << 5);                //set bit 5, EN24BIT, clear bit 6 RST
 
+fprintf(stderr, "write_si\n");
 	write_sampling_instant_control_register_adc(0x0);       //0x0, all channels sample at the same time
 
+fprintf(stderr, "write_rate\n");
 	write_data_rate_control_register_adc(0x201a);           //20MHz/(( 128 *384)+( 26 *32))=~400.128Hz, FSAMPC = 001, FSAMPF = 11010
 
+fprintf(stderr, "read_data\n");
 	dummy_read_data_register_adc();
 
+fprintf(stderr, "adc block\n");
 	read_sample_block_adc(buffer, sizeof(buffer));
+
+	write(2, buffer, sizeof(buffer));
 
 	return 0;
 }
