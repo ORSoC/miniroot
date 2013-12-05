@@ -287,12 +287,21 @@ void read_sample_block_adc(void *data, size_t len)
 	}
 }
 
-int main(int argc __attribute__((unused)), char **argv __attribute__((unused)))
+int main(int argc, char **argv)
 {
+	int samples = 10;
+	char *buffer;
+	int len;
+
 	open_adcctrl();
 
-	char buffer[10*6*4];
+	if (argc > 1)
+		samples = atoi(argv[1]);
 
+	len = samples * 6 * 4;
+
+	char buffer[len];
+	
 fprintf(stderr, "set_muxes\n");
 	set_muxes(0);
 
@@ -320,9 +329,9 @@ fprintf(stderr, "read_data\n");
 	dummy_read_data_register_adc();
 
 fprintf(stderr, "adc block\n");
-	read_sample_block_adc(buffer, sizeof(buffer));
+	read_sample_block_adc(buffer, len);
 
-	write(2, buffer, sizeof(buffer));
+	write(1, buffer, len);
 
 	return 0;
 }
