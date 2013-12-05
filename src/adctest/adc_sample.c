@@ -18,6 +18,12 @@ char *adc_base;
 int adcctrl_fd;
 int adcspi_fd;
 
+#ifndef SPI_IOC_RD_BUFFER_SIZE
+/* Buffer size */
+#define SPI_IOC_RD_BUFFER_SIZE          _IOR(SPI_IOC_MAGIC, 5, __u32)
+#define SPI_IOC_WR_BUFFER_SIZE          _IOW(SPI_IOC_MAGIC, 5, __u32)
+#endif
+
 uint32_t adc_read(int reg)
 {
 	return *(uint32_t *)(adc_base + reg);
@@ -101,6 +107,13 @@ static void open_adcspi(void)
 		exit(1);
 	}
 }
+
+static int set_adcspi_bufsiz(int len)
+{
+	len = (len + 0xfff) & ~0xfff;
+	return ioctl(adcspi_fd, SPI_IOC_WR_BUFFER_SIZE, &len);
+}
+
 
 void write_configuration_register_adc(uint8_t value)
 {
@@ -290,7 +303,6 @@ void read_sample_block_adc(void *data, size_t len)
 int main(int argc, char **argv)
 {
 	int samples = 10;
-	char *buffer;
 	int len;
 
 	open_adcctrl();
@@ -312,6 +324,8 @@ fprintf(stderr, "pga_setup\n");
 
 fprintf(stderr, "open_adcspi\n");
 	open_adcspi();
+
+	set_adcspi_bufsiz(len);
 
 fprintf(stderr, "write_conf\n");
 	write_configuration_register_adc(1 << 6);                //set bit 6, RST
