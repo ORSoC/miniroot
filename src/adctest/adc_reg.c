@@ -77,7 +77,7 @@ int main(int argc, char **argv)
 	}
 
 	if (argc == 2) {
-		printf("0x%x", adc_read(adc_parse_reg(argv[1])));
+		printf("0x%x\n", adc_read(adc_parse_reg(argv[1])));
 		exit(0);
 	}
 	if (argc == 3) {
