@@ -167,13 +167,12 @@ clean_oled-test:
 
 .PHONY: spi-test
 
-spi-test: spi-test-$(SPITEST_VERSION)/spi-test
-
-spi-test-$(SPITEST_VERSION)/spi-test:	spi-test-$(SPITEST_VERSION)/Makefile
+spi-test:	spi-test-$(SPITEST_VERSION)/.unpacked
 	$(MAKE) -C spi-test-$(SPITEST_VERSION)
 
-spi-test-$(SPITEST_VERSION)/Makefile: spi-test-$(SPITEST_VERSION).tar.gz
+spi-test-$(SPITEST_VERSION)/.unpacked: spi-test-$(SPITEST_VERSION).tar.gz
 	tar zxf spi-test-$(SPITEST_VERSION).tar.gz
+	touch spi-test-$(SPITEST_VERSION)/.unpacked
 
 clean: clean_spi-test
 clean_spi-test:
